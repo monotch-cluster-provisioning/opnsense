@@ -15,15 +15,41 @@ fetch -qo /root/.ssh/authorized_keys \
 chmod 700 /root/.ssh
 chmod 600 /root/.ssh/authorized_keys
 
-# Enable SSH in config.xml using PHP (guaranteed available on OPNsense)
 /usr/local/bin/php -r '
   $xml = simplexml_load_file("/conf/config.xml");
-  $xml->system->enablessh = "enabled";
-  $xml->system->permitrootlogin = "enabled";
+
+  # Remove old enablessh if we added it
+  unset($xml->system->enablessh);
+  unset($xml->system->permitrootlogin);
+
+  # Create the ssh block as seen in config.xml
+  $ssh = $xml->addChild("ssh");
+  $ssh->addChild("group", "admins");
+  $ssh->addChild("noauto", "1");
+  $ssh->addChild("interfaces");
+  $ssh->addChild("kex");
+  $ssh->addChild("ciphers");
+  $ssh->addChild("macs");
+  $ssh->addChild("keys");
+  $ssh->addChild("keysig");
+  $ssh->addChild("rekeylimit");
+  $ssh->addChild("enabled", "enabled");
+  $ssh->addChild("passwordauth", "1");
+  $ssh->addChild("permitrootlogin", "1");
+
   $dom = dom_import_simplexml($xml);
   $dom->ownerDocument->save("/conf/config.xml");
   echo "config.xml updated\n";
 '
+
+# Verify
+grep -A5 '<ssh>' /conf/config.xml
+
+# Reload configd
+/usr/local/etc/rc.d/configd restart
+
+# Start SSH
+/usr/local/sbin/pluginctl -s openssh start
 
 # Start SSH via OPNsense's own service manager
 /usr/local/sbin/pluginctl -s openssh start

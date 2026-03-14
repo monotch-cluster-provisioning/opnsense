@@ -1,10 +1,10 @@
 #!/bin/sh
 # b.sh — OPNsense bootstrap
-# Usage: setenv GITHUB_USER xxx &&& fetch -qo - https://raw.githubusercontent.com/monotch-cluster-provisioning/opnsense/main/b.sh | sh
+# Usage: setenv GITHUB_USER xxx && fetch -qo - https://raw.githubusercontent.com/monotch-cluster-provisioning/opnsense/main/b.sh | sh
 
 # Guard: fail clearly if no user provided
 if [ -z "$GITHUB_USER" ]; then
-  echo "ERROR: GITHUB_USER not set. Run as: setenv GITHUB_USER xxx &&& fetch -qo - <url> | sh"
+  echo "ERROR: GITHUB_USER not set. Run as: setenv GITHUB_USER xxx && fetch -qo - <url> | sh"
   exit 1
 fi
 

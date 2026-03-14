@@ -18,12 +18,13 @@ chmod 600 /root/.ssh/authorized_keys
 /usr/local/bin/php -r '
   $xml = simplexml_load_file("/conf/config.xml");
 
-  # Remove old enablessh if we added it
+  # Clean up any previous attempts
   unset($xml->system->enablessh);
   unset($xml->system->permitrootlogin);
+  unset($xml->system->ssh);
 
-  # Create the ssh block as seen in config.xml
-  $ssh = $xml->addChild("ssh");
+  # Recreate ssh block under system
+  $ssh = $xml->system->addChild("ssh");
   $ssh->addChild("group", "admins");
   $ssh->addChild("noauto", "1");
   $ssh->addChild("interfaces");

@@ -15,12 +15,17 @@ fetch -qo /root/.ssh/authorized_keys \
 chmod 700 /root/.ssh
 chmod 600 /root/.ssh/authorized_keys
 
-# Allow root login via SSH
-grep -q 'PermitRootLogin yes' /etc/ssh/sshd_config || \
-  echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+# Enable SSH in OPNsense config.xml
+# Inject tags into <system> block if not already present
+if ! grep -q '<enablessh>' /conf/config.xml; then
+  sed -i '' 's|</system>|<enablessh>enabled</enablessh></system>|' /conf/config.xml
+fi
+if ! grep -q '<permitrootlogin>' /conf/config.xml; then
+  sed -i '' 's|</system>|<permitrootlogin>enabled</permitrootlogin></system>|' /conf/config.xml
+fi
 
-# Start SSH
-service openssh onestart
+# Start SSH via OPNsense's own service manager
+/usr/local/sbin/pluginctl -s openssh start
 
 # Disable firewall
 pfctl -d

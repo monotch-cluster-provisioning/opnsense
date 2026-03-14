@@ -1,10 +1,10 @@
 #!/bin/sh
 # b.sh — OPNsense bootstrap
-# Usage: GITHUB_USER=xxx fetch -qo - https://raw.githubusercontent.com/USER/b/main/b.sh | sh
+# Usage: setenv GITHUB_USER xxx &&& fetch -qo - https://raw.githubusercontent.com/monotch-cluster-provisioning/opnsense/main/b.sh | sh
 
 # Guard: fail clearly if no user provided
 if [ -z "$GITHUB_USER" ]; then
-  echo "ERROR: GITHUB_USER not set. Run as: GITHUB_USER=xxx fetch -qo - <url> | sh"
+  echo "ERROR: GITHUB_USER not set. Run as: setenv GITHUB_USER xxx &&& fetch -qo - <url> | sh"
   exit 1
 fi
 
@@ -20,7 +20,7 @@ grep -q 'PermitRootLogin yes' /etc/ssh/sshd_config || \
   echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
 
 # Start SSH
-service openssh start
+service openssh onestart
 
 # Disable firewall
 pfctl -d

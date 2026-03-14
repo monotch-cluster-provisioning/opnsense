@@ -15,25 +15,16 @@ fetch -qo /root/.ssh/authorized_keys \
 chmod 700 /root/.ssh
 chmod 600 /root/.ssh/authorized_keys
 
+# Update config.xml to enable SSH
 /usr/local/bin/php -r '
   $xml = simplexml_load_file("/conf/config.xml");
 
   # Clean up any previous attempts
-  unset($xml->system->enablessh);
-  unset($xml->system->permitrootlogin);
   unset($xml->system->ssh);
 
   # Recreate ssh block under system
   $ssh = $xml->system->addChild("ssh");
-  $ssh->addChild("group", "admins");
   $ssh->addChild("noauto", "1");
-  $ssh->addChild("interfaces");
-  $ssh->addChild("kex");
-  $ssh->addChild("ciphers");
-  $ssh->addChild("macs");
-  $ssh->addChild("keys");
-  $ssh->addChild("keysig");
-  $ssh->addChild("rekeylimit");
   $ssh->addChild("enabled", "enabled");
   $ssh->addChild("passwordauth", "1");
   $ssh->addChild("permitrootlogin", "1");
@@ -43,17 +34,8 @@ chmod 600 /root/.ssh/authorized_keys
   echo "config.xml updated\n";
 '
 
-# Verify
-grep -A5 '<ssh>' /conf/config.xml
-
-# Reload configd
-/usr/local/etc/rc.d/configd restart
-
-# Start SSH
-/usr/local/sbin/pluginctl -s openssh start
-
-# Start SSH via OPNsense's own service manager
-/usr/local/sbin/pluginctl -s openssh start
+# Reload config without rebooting
+/usr/local/etc/rc.reload_all
 
 # Disable firewall
 pfctl -d

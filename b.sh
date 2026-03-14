@@ -15,14 +15,15 @@ fetch -qo /root/.ssh/authorized_keys \
 chmod 700 /root/.ssh
 chmod 600 /root/.ssh/authorized_keys
 
-# Enable SSH in OPNsense config.xml
-# Inject tags into <system> block if not already present
-if ! grep -q '<enablessh>' /conf/config.xml; then
-  sed -i '' 's|</system>|<enablessh>enabled</enablessh></system>|' /conf/config.xml
-fi
-if ! grep -q '<permitrootlogin>' /conf/config.xml; then
-  sed -i '' 's|</system>|<permitrootlogin>enabled</permitrootlogin></system>|' /conf/config.xml
-fi
+# Enable SSH in config.xml using PHP (guaranteed available on OPNsense)
+/usr/local/bin/php -r '
+  $xml = simplexml_load_file("/conf/config.xml");
+  $xml->system->enablessh = "enabled";
+  $xml->system->permitrootlogin = "enabled";
+  $dom = dom_import_simplexml($xml);
+  $dom->ownerDocument->save("/conf/config.xml");
+  echo "config.xml updated\n";
+'
 
 # Start SSH via OPNsense's own service manager
 /usr/local/sbin/pluginctl -s openssh start
